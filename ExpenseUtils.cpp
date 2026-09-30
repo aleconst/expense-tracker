@@ -46,3 +46,22 @@ std::vector<Expense> filterByCategory (const std::vector<Expense>& expenses, con
 
     return filtered;
 }
+
+bool addExpense (std::vector<Expense>& expenses, const Expense& exp) {
+    if (exp.id <= 0)
+        return false;
+
+    for (size_t index = 0; index < expenses.size(); index++)
+        if (expenses[index].id == exp.id)
+            return false;
+
+    if (exp.amount_in_cents <= 0)
+        return false;
+
+    if (exp.category.size() == 0)
+        return false;
+    
+    expenses.push_back (exp);
+
+    return true;
+}

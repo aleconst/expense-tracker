@@ -34,5 +34,25 @@ int main() {
 
     displayExpenses (filtered);
 
+    size_t size_before = expenses.size();
+    bool added1 = addExpense (expenses, {4, 0, "food", ""});
+
+    assert (added1 == false);
+    assert (expenses.size() == size_before);
+
+    bool added2 = addExpense (expenses, {4, 1500, "food", "Dinner"});
+
+    assert (added2 == true);
+    assert (expenses.size() == size_before + 1);
+    assert (expenses.back().id == 4);
+    assert (expenses.back().amount_in_cents == 1500);
+
+    size_t size_before_duplicate = expenses.size();
+    bool added3 = addExpense (expenses, {4, 3000, "food", ""});
+
+    assert (added3 == false);
+    assert (expenses.back().amount_in_cents == 1500);
+    assert (expenses.size() == size_before_duplicate);
+
     return 0;
 }
