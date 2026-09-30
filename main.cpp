@@ -26,5 +26,13 @@ int main() {
     assert (formatAmount(75) == "0.75");
     assert (formatAmount(0) == "0.00");
 
+    std::vector<Expense> filtered = filterByCategory (expenses, "food");
+
+    assert (filtered.size() == 1);
+    assert (filtered[0].id == 2);
+    assert (filterByCategory (expenses, "health").size() == 0);
+
+    displayExpenses (filtered);
+
     return 0;
 }

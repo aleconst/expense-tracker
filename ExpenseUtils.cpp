@@ -35,3 +35,14 @@ int calculateTotal (const std::vector<Expense>& expenses) {
 
     return total;
 }
+
+std::vector<Expense> filterByCategory (const std::vector<Expense>& expenses, const std::string& category) {
+    std::vector<Expense> filtered;
+
+    for (size_t index = 0; index < expenses.size(); index++) {
+        if (expenses[index].category == category)
+            filtered.push_back (expenses[index]);
+    }
+
+    return filtered;
+}
