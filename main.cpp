@@ -18,6 +18,7 @@ int main() {
     while (true) {
         std::cout << "1. List expenses \n";
         std::cout << "2. Show total \n";
+        std::cout << "3. Remove expense \n";
         std::cout << "0. Exit \n\n";
 
         std::cout << "Choose an option: \n";
@@ -42,6 +43,26 @@ int main() {
         }
         else if (response == 2) {
             std::cout << "Total: " << formatAmount (calculateTotal (expenses)) << " EUR \n\n";
+        }
+        else if (response == 3) {
+            std::cout << "Enter expense ID: \n";
+
+            int removed_id;
+
+            if (!(std::cin >> removed_id)) {
+                if (std::cin.eof() == true)
+                    break;
+
+                std::cin.clear();
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                std::cout << "Invalid ID. Please enter a number. \n\n";
+                continue;
+            }
+
+            if (removeExpense (expenses, removed_id))
+                std::cout << "Expense removed. \n\n";
+            else
+                std::cout << "Expense not found. \n\n";
         }
         else
             std::cout << "Invalid option \n\n";
