@@ -4,9 +4,11 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <limits>
 
 int main() {
 
+    std::cout << "\n";
     std::vector<Expense> expenses;
 
     expenses.push_back({1, 2500, "transport", "Uber"});
@@ -21,7 +23,16 @@ int main() {
         std::cout << "Choose an option: \n";
 
         int response;
-        std::cin >> response;
+
+        if (!(std::cin >> response)) {
+            if (std::cin.eof() == true)
+                break;
+
+            std::cin.clear ();
+            std::cin.ignore (std::numeric_limits<std::streamsize>::max(), '\n');
+            std::cout << "Invalid input. Please enter a number. \n\n";
+            continue;
+        }
 
         if (response == 0)
             break;
