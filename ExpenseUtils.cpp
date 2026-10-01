@@ -65,3 +65,15 @@ bool addExpense (std::vector<Expense>& expenses, const Expense& exp) {
 
     return true;
 }
+
+bool removeExpense (std::vector<Expense>& expenses, const int& id) {
+    for (size_t index = 0; index < expenses.size(); index++) {
+        if (expenses[index].id == id)
+        {
+            expenses.erase (expenses.begin() + index);
+            return true;
+        }
+    }
+
+    return false;
+}
