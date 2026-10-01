@@ -19,6 +19,7 @@ int main() {
         std::cout << "1. List expenses \n";
         std::cout << "2. Show total \n";
         std::cout << "3. Remove expense \n";
+        std::cout << "4. Filter by category \n";
         std::cout << "0. Exit \n\n";
 
         std::cout << "Choose an option: \n";
@@ -63,6 +64,24 @@ int main() {
                 std::cout << "Expense removed. \n\n";
             else
                 std::cout << "Expense not found. \n\n";
+        }
+        else if (response == 4) {
+            std::cout << "Enter category: \n";
+
+            std::string category;
+            std::vector<Expense> filtered;
+            
+            if (!(std::cin >> category))
+                break;
+
+            filtered = filterByCategory(expenses, category);
+
+            if (filtered.empty() == true)
+                std::cout << "No expenses found for this category. \n\n";
+            else {
+                displayExpenses(filtered);
+                std::cout << "\n";
+            }
         }
         else
             std::cout << "Invalid option \n\n";
