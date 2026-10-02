@@ -1,3 +1,6 @@
 *.exe
 *.o
 build/
+practice/
+expenses.txt
+practice.txt
