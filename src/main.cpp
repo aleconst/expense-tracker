@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 #include <limits>
+#include <iomanip>
 
 int main() {
 
@@ -24,6 +25,7 @@ int main() {
         std::cout << "5. Add expense\n";
         std::cout << "6. Save expenses\n";
         std::cout << "7. Load expenses\n";
+        std::cout << "8. Show totals by category\n";
         std::cout << "0. Exit\n\n";
 
         std::cout << "Choose an option: ";
@@ -139,6 +141,19 @@ int main() {
                 std::cout << "Could not load expenses. Current data was preserved.\n";
             else
                 std::cout << "Expenses loaded.\n";
+        }
+        else if (response == 8) {
+            std::unordered_map <std::string, int> mp;
+
+            mp = calculateTotalsByCategory (expenses);
+
+            if (mp.empty() == true)
+                std::cout << "No expenses available.\n";
+
+            for (const auto& entry : mp) {
+                std::cout << std::quoted (entry.first) << ": " 
+                                << formatAmount(entry.second) << " EUR\n";
+            }
         }
         else
             std::cout << "Invalid option\n";

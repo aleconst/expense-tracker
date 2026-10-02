@@ -77,3 +77,13 @@ bool removeExpense (std::vector<Expense>& expenses, const int& id) {
 
     return false;
 }
+
+std::unordered_map <std::string, int> calculateTotalsByCategory (const std::vector <Expense>& expenses) {
+    std::unordered_map <std::string, int> totals;
+
+    for (size_t index = 0; index < expenses.size(); index++) {
+        totals[expenses[index].category] += expenses[index].amount_in_cents;
+    }
+
+    return totals;
+}

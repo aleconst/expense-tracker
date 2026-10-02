@@ -7,6 +7,7 @@
 #include <iostream>
 #include <iomanip>
 #include <cassert>
+#include <unordered_map>
 
 int main() {
 
@@ -159,6 +160,26 @@ int main() {
 
     assert (result8 == false);
     assert (val3 == 99);
+
+    // Test category totals: sum repeated categories separately
+
+    std::vector <Expense> total;
+    std::vector <Expense> empty_exp;
+
+    total.push_back ({10, 1200, "food", ""});
+    total.push_back ({20, 800, "food", ""});
+    total.push_back ({30, 500, "transport", ""});
+
+    std::unordered_map <std::string, int> mp;
+    std::unordered_map <std::string, int> empty_mp;
+
+    mp = calculateTotalsByCategory (total);
+    empty_mp = calculateTotalsByCategory (empty_exp);
+
+    assert (mp.size() == 2);
+    assert (mp["food"] == 2000);
+    assert (mp["transport"] == 500);
+    assert (empty_mp.empty() == true);
 
     // Report successful test completion
 
