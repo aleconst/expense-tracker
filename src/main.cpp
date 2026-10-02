@@ -1,6 +1,7 @@
 #include "Expense.h"
 #include "ExpenseUtils.h"
 #include "ExpenseStorage.h"
+#include "InputUtils.h"
 
 #include <iostream>
 #include <string>
@@ -28,14 +29,15 @@ int main() {
         std::cout << "Choose an option: ";
 
         int response;
+        std::string input_line;
 
-        if (!(std::cin >> response)) {
-            if (std::cin.eof() == true)
-                break;
+        if (! (std::getline (std::cin, input_line)))
+            break;
 
-            std::cin.clear ();
-            std::cin.ignore (std::numeric_limits<std::streamsize>::max(), '\n');
-            std::cout << "Invalid input. Please enter a number.\n";
+        bool valid = parseInteger (input_line, response);
+
+        if (valid == false) {
+            std::cout << "Invalid input. Please enter a whole number.\n";
             continue;
         }
 
@@ -52,13 +54,13 @@ int main() {
 
             int removed_id;
 
-            if (!(std::cin >> removed_id)) {
-                if (std::cin.eof() == true)
-                    break;
+            if (! (std::getline (std::cin, input_line)))
+                break;
 
-                std::cin.clear();
-                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                std::cout << "Invalid ID. Please enter a number.\n";
+            valid = parseInteger (input_line, removed_id);
+
+            if (valid == false) {
+                std::cout << "Invalid ID. Please enter a whole number.\n";
                 continue;
             }
 
@@ -73,7 +75,7 @@ int main() {
             std::string category;
             std::vector<Expense> filtered;
             
-            if (!(std::cin >> category))
+            if (!(std::getline (std::cin, category)))
                 break;
 
             filtered = filterByCategory(expenses, category);
@@ -87,32 +89,31 @@ int main() {
             Expense exp = {};
 
             std::cout << "Enter expense ID: ";
-            if (!(std::cin >> exp.id)) {
-                if (std::cin.eof() == true)
-                    break;
+            if (! (std::getline (std::cin, input_line)))
+                break;
 
-                std::cin.clear();
-                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                std::cout << "Invalid ID. Please enter a number.\n";
+            valid = parseInteger (input_line, exp.id);
+
+            if (valid == false) {
+                std::cout << "Invalid ID. Please enter a whole number.\n";
                 continue;
             }
             
             std::cout << "Enter amount in cents: ";
-            if (!(std::cin >> exp.amount_in_cents)) {
-                if (std::cin.eof() == true)
-                    break;
+            if (! (std::getline (std::cin, input_line)))
+                break;
 
-                std::cin.clear();
-                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                std::cout << "Invalid amount. Please enter a number.\n";
+            valid = parseInteger (input_line, exp.amount_in_cents);
+
+            if (valid == false) {
+                std::cout << "Invalid amount. Please enter a whole number.\n";
                 continue;
             }
 
             std::cout << "Enter category: ";
-            if (!(std::cin >> exp.category))
+            if (! (std::getline (std::cin, exp.category)))
                 break;
 
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             std::cout << "Enter description: ";
 
             if (!std::getline (std::cin, exp.description))

@@ -1,6 +1,7 @@
 #include "Expense.h"
 #include "ExpenseUtils.h"
 #include "ExpenseStorage.h"
+#include "InputUtils.h"
 
 #include <fstream>
 #include <iostream>
@@ -134,6 +135,30 @@ int main() {
     assert (original_expenses[0].amount_in_cents == existing_expenses[0].amount_in_cents);
     assert (original_expenses[0].category == existing_expenses[0].category);
     assert (original_expenses[0].description == existing_expenses[0].description);
+
+    // Test parseInteger: reject trailing text without changing the output
+
+    int val = 99;
+    bool result6 = parseInteger ("42abc", val);
+
+    assert (result6 == false);
+    assert (val == 99);
+
+    // Test parseInteger: accept an integer with surrounding spaces
+
+    int val2 = 99;
+    bool result7 = parseInteger (" 42 ", val2);
+
+    assert (result7 == true);
+    assert (val2 == 42);
+
+    // Test parseInteger: reject empty input without changing the output
+
+    int val3 = 99;
+    bool result8 = parseInteger ("", val3);
+
+    assert (result8 == false);
+    assert (val3 == 99);
 
     // Report successful test completion
 
