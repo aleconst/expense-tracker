@@ -4,3 +4,5 @@ build/
 practice/
 expenses.txt
 practice.txt
+test_expenses.txt
+test_invalid_expenses.txt

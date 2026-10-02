@@ -1,7 +1,10 @@
 #include "Expense.h"
 #include "ExpenseUtils.h"
+#include "ExpenseStorage.h"
 
+#include <fstream>
 #include <iostream>
+#include <iomanip>
 #include <cassert>
 
 int main() {
@@ -83,6 +86,54 @@ int main() {
     assert (expenses_to_remove.size() == 2);
     assert (expenses_to_remove[0].id == 10);
     assert (expenses_to_remove[1].id == 30);
+
+    // Test storage: save and reload expenses
+
+    bool result3 = saveExpenses (expenses, "test_expenses.txt");
+
+    assert (result3 == true);
+
+    std::vector<Expense> loaded;
+
+    bool result4 = loadExpenses (loaded, "test_expenses.txt");
+
+    assert (result4 == true);
+    assert (loaded.size() == expenses.size());
+
+    for (size_t index = 0; index < expenses.size(); index++) {
+        assert (loaded[index].id == expenses[index].id);
+        assert (loaded[index].amount_in_cents == expenses[index].amount_in_cents);
+        assert (loaded[index].category == expenses[index].category);
+        assert (loaded[index].description == expenses[index].description);
+    }
+
+    // Test storage: invalid file leaves existing expenses unchanged
+
+    std::ofstream fout ("test_invalid_expenses.txt");
+    Expense exp2 = {10, 1500, "food", "Valid expense"};
+
+    assert (fout.is_open() == true);
+
+    fout << exp2.id << " " << exp2.amount_in_cents << " "
+                << std::quoted (exp2.category) << " " 
+                << std::quoted (exp2.description) << "\n";
+
+    fout << "invalid data";
+
+    fout.close();
+    assert (!fout.fail());
+
+    std::vector<Expense> original_expenses = {{99, 500, "transport", "Original"}};
+    std::vector<Expense> existing_expenses = original_expenses;
+
+    bool  result5 = loadExpenses (original_expenses, "test_invalid_expenses.txt");
+
+    assert (result5 == false);
+    assert (original_expenses.size() == 1);
+    assert (original_expenses[0].id == existing_expenses[0].id);
+    assert (original_expenses[0].amount_in_cents == existing_expenses[0].amount_in_cents);
+    assert (original_expenses[0].category == existing_expenses[0].category);
+    assert (original_expenses[0].description == existing_expenses[0].description);
 
     // Report successful test completion
 

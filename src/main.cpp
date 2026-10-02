@@ -22,6 +22,7 @@ int main() {
         std::cout << "4. Filter by category\n";
         std::cout << "5. Add expense\n";
         std::cout << "6. Save expenses\n";
+        std::cout << "7. Load expenses\n";
         std::cout << "0. Exit\n\n";
 
         std::cout << "Choose an option: ";
@@ -123,14 +124,20 @@ int main() {
                 std::cout << "Expense rejected: ID must be positive and unique, amount must be positive, and category must not be empty.\n";
         }
         else if (response == 6) {
-            bool saved;
-            
-            saved = saveExpenses (expenses, "expenses.txt");
+            bool saved = saveExpenses (expenses, "expenses.txt");
 
             if (!saved)
                 std::cout << "Could not save expenses.\n";
             else
                 std::cout << "Expenses saved.\n";
+        }
+        else if (response == 7) {
+            bool loaded = loadExpenses (expenses, "expenses.txt");
+
+            if (!loaded)
+                std::cout << "Could not load expenses. Current data was preserved.\n";
+            else
+                std::cout << "Expenses loaded.\n";
         }
         else
             std::cout << "Invalid option\n";

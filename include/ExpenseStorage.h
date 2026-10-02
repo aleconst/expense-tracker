@@ -5,3 +5,4 @@
 #include <vector>
 
 bool saveExpenses (const std::vector<Expense>& expenses, const std::string& file_path);
+bool loadExpenses (std::vector<Expense>& expenses, const std::string& file_path);
