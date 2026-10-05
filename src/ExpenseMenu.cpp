@@ -126,3 +126,21 @@ bool handleAddExpense(std::vector<Expense>& expenses) {
 
     return true;
 }
+
+void handleSaveExpenses(const std::vector<Expense>& expenses) {
+    bool saved = saveExpenses (expenses, "expenses.txt");
+
+    if (!saved)
+        std::cout << "Could not save expenses.\n";
+    else
+        std::cout << "Expenses saved.\n";
+}
+
+void handleLoadExpenses(std::vector<Expense>& expenses) {
+    bool loaded = loadExpenses (expenses, "expenses.txt");
+
+    if (!loaded)
+        std::cout << "Could not load expenses. Current data was preserved.\n";
+    else
+        std::cout << "Expenses loaded.\n";
+}

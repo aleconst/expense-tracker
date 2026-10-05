@@ -60,25 +60,12 @@ int main() {
             if (should_continue == false)
                 break;
         }
-        else if (response == 6) {
-            bool saved = saveExpenses (expenses, "expenses.txt");
-
-            if (!saved)
-                std::cout << "Could not save expenses.\n";
-            else
-                std::cout << "Expenses saved.\n";
-        }
-        else if (response == 7) {
-            bool loaded = loadExpenses (expenses, "expenses.txt");
-
-            if (!loaded)
-                std::cout << "Could not load expenses. Current data was preserved.\n";
-            else
-                std::cout << "Expenses loaded.\n";
-        }
-        else if (response == 8) {
+        else if (response == 6)
+            handleSaveExpenses (expenses);
+        else if (response == 7)
+            handleLoadExpenses (expenses);
+        else if (response == 8) 
             displayTotalsByCategory (expenses);
-        }
         else
             std::cout << "Invalid option\n";
     }
