@@ -25,3 +25,11 @@ target_link_libraries(expense-tests PRIVATE expense_core)
 
 enable_testing()
 add_test(NAME expense-tests COMMAND expense-tests)
+
+find_package(Qt6 REQUIRED COMPONENTS Widgets)
+
+add_executable(expense-gui
+    src/gui_main.cpp
+)
+
+target_link_libraries(expense-gui PRIVATE expense_core Qt6::Widgets)
