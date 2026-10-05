@@ -21,3 +21,6 @@ add_executable(expense-tests
 
 target_include_directories(expense-tests PRIVATE include)
 target_compile_features(expense-tests PRIVATE cxx_std_20)
+
+enable_testing()
+add_test(NAME expense-tests COMMAND expense-tests)
