@@ -6,3 +6,6 @@
 void displayMenu();
 void displayTotal(const std::vector<Expense>& expenses);
 void displayTotalsByCategory(const std::vector<Expense>& expenses);
+bool handleFilterExpenses(const std::vector<Expense>& expenses);
+bool handleRemoveExpense(std::vector<Expense>& expenses);
+bool handleAddExpense(std::vector<Expense>& expenses);

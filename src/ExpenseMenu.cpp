@@ -40,3 +40,89 @@ void displayTotalsByCategory(const std::vector<Expense>& expenses) {
                         << formatAmount(entry.second) << " EUR\n";
     }
 }
+
+bool handleFilterExpenses(const std::vector<Expense>& expenses) {
+    std::cout << "Enter category: ";
+
+    std::string category;
+    std::vector<Expense> filtered;
+    
+    if (!(std::getline (std::cin, category)))
+        return false;
+
+    filtered = filterByCategory(expenses, category);
+
+    if (filtered.empty() == true)
+        std::cout << "No expenses found for this category.\n";
+    else
+        displayExpenses(filtered);
+
+    return true;
+}
+
+bool handleRemoveExpense(std::vector<Expense>& expenses) {
+    std::cout << "Enter expense ID: ";
+
+    int removed_id;
+    std::string input_line;
+
+    if (! (std::getline (std::cin, input_line)))
+        return false;
+
+    bool valid = parseInteger (input_line, removed_id);
+
+    if (valid == false) {
+        std::cout << "Invalid ID. Please enter a whole number.\n";
+        return true;
+    }
+
+    if (removeExpense (expenses, removed_id))
+        std::cout << "Expense removed.\n";
+    else
+        std::cout << "Expense not found.\n";
+
+    return true;
+}
+
+bool handleAddExpense(std::vector<Expense>& expenses) {
+    Expense exp = {};
+    std::string input_line;
+
+    std::cout << "Enter expense ID: ";
+    if (! (std::getline (std::cin, input_line)))
+        return false;
+
+    bool valid = parseInteger (input_line, exp.id);
+
+    if (valid == false) {
+        std::cout << "Invalid ID. Please enter a whole number.\n";
+        return true;
+    }
+    
+    std::cout << "Enter amount in cents: ";
+    if (! (std::getline (std::cin, input_line)))
+        return false;
+
+    valid = parseInteger (input_line, exp.amount_in_cents);
+
+    if (valid == false) {
+        std::cout << "Invalid amount. Please enter a whole number.\n";
+        return true;
+    }
+
+    std::cout << "Enter category: ";
+    if (! (std::getline (std::cin, exp.category)))
+        return false;
+
+    std::cout << "Enter description: ";
+
+    if (!std::getline (std::cin, exp.description))
+        return false;
+
+    if(addExpense(expenses, exp) == true)
+        std::cout << "Expense added.\n";
+    else 
+        std::cout << "Expense rejected: ID must be positive and unique, amount must be positive, and category must not be empty.\n";
+
+    return true;
+}
