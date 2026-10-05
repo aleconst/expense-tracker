@@ -2,6 +2,7 @@
 #include "ExpenseUtils.h"
 #include "ExpenseStorage.h"
 #include "InputUtils.h"
+#include "ExpenseMenu.h"
 
 #include <iostream>
 #include <string>
@@ -18,17 +19,7 @@ int main() {
     expenses.push_back({3, 1800, "books", "Rent a book"});
 
     while (true) {
-        std::cout << "\n1. List expenses\n";
-        std::cout << "2. Show total\n";
-        std::cout << "3. Remove expense\n";
-        std::cout << "4. Filter by category\n";
-        std::cout << "5. Add expense\n";
-        std::cout << "6. Save expenses\n";
-        std::cout << "7. Load expenses\n";
-        std::cout << "8. Show totals by category\n";
-        std::cout << "0. Exit\n\n";
-
-        std::cout << "Choose an option: ";
+        displayMenu();
 
         int response;
         std::string input_line;
@@ -49,7 +40,7 @@ int main() {
             displayExpenses (expenses);
         }
         else if (response == 2) {
-            std::cout << "Total: " << formatAmount (calculateTotal (expenses)) << " EUR\n";
+            displayTotal(expenses);
         }
         else if (response == 3) {
             std::cout << "Enter expense ID: ";
@@ -143,17 +134,7 @@ int main() {
                 std::cout << "Expenses loaded.\n";
         }
         else if (response == 8) {
-            std::unordered_map <std::string, int> mp;
-
-            mp = calculateTotalsByCategory (expenses);
-
-            if (mp.empty() == true)
-                std::cout << "No expenses available.\n";
-
-            for (const auto& entry : mp) {
-                std::cout << std::quoted (entry.first) << ": " 
-                                << formatAmount(entry.second) << " EUR\n";
-            }
+            displayTotalsByCategory (expenses);
         }
         else
             std::cout << "Invalid option\n";
