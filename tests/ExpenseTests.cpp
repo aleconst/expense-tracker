@@ -8,6 +8,7 @@
 #include <iomanip>
 #include <cassert>
 #include <unordered_map>
+#include <cstdint>
 
 int main() {
 
@@ -170,8 +171,8 @@ int main() {
     total.push_back ({20, 800, "food", ""});
     total.push_back ({30, 500, "transport", ""});
 
-    std::unordered_map <std::string, int> mp;
-    std::unordered_map <std::string, int> empty_mp;
+    std::unordered_map <std::string, std::int64_t> mp;
+    std::unordered_map <std::string, std::int64_t> empty_mp;
 
     mp = calculateTotalsByCategory (total);
     empty_mp = calculateTotalsByCategory (empty_exp);
@@ -180,6 +181,26 @@ int main() {
     assert (mp["food"] == 2000);
     assert (mp["transport"] == 500);
     assert (empty_mp.empty() == true);
+
+    // Test totals: accumulate and format amounts beyond the 32-bit integer limit
+
+    std::vector<Expense> exp;
+    std::int64_t sum = 0;
+
+    exp.push_back ({5, 1500000000, "travel", ""});
+    exp.push_back ({6, 1500000000, "travel", ""});
+
+    assert (calculateTotal (exp) == 3000000000);
+    
+    std::unordered_map <std::string, std::int64_t> categories;
+    categories = calculateTotalsByCategory (exp);
+
+    for (const auto& entry : categories)
+        if (entry.first == "travel")
+            sum += entry.second;
+
+    assert (formatAmount (sum) == "30000000.00");
+    assert(sum == 3000000000);
 
     // Report successful test completion
 

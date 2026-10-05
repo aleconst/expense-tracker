@@ -4,8 +4,9 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <cstdint>
 
-std::string formatAmount (int cents) {
+std::string formatAmount (std::int64_t cents) {
     std::string format;
 
     format += std::to_string (cents / 100);
@@ -27,8 +28,8 @@ void displayExpenses (const std::vector<Expense>& expenses) {
     }
 }
 
-int calculateTotal (const std::vector<Expense>& expenses) {
-    int total = 0;
+std::int64_t calculateTotal (const std::vector<Expense>& expenses) {
+    std::int64_t total = 0;
 
     for (size_t index = 0; index < expenses.size(); index++)
         total += expenses[index].amount_in_cents;
@@ -78,8 +79,8 @@ bool removeExpense (std::vector<Expense>& expenses, const int& id) {
     return false;
 }
 
-std::unordered_map <std::string, int> calculateTotalsByCategory (const std::vector <Expense>& expenses) {
-    std::unordered_map <std::string, int> totals;
+std::unordered_map <std::string, std::int64_t> calculateTotalsByCategory (const std::vector <Expense>& expenses) {
+    std::unordered_map <std::string, std::int64_t> totals;
 
     for (size_t index = 0; index < expenses.size(); index++) {
         totals[expenses[index].category] += expenses[index].amount_in_cents;

@@ -8,6 +8,7 @@
 #include <string>
 #include <iostream>
 #include <iomanip>
+#include <cstdint>
 
 void displayMenu() {
     std::cout << "\n1. List expenses\n";
@@ -28,7 +29,7 @@ void displayTotal(const std::vector<Expense>& expenses) {
 }
 
 void displayTotalsByCategory(const std::vector<Expense>& expenses) {
-    std::unordered_map <std::string, int> mp;
+    std::unordered_map <std::string, std::int64_t> mp;
 
     mp = calculateTotalsByCategory (expenses);
 
