@@ -48,12 +48,21 @@ int main(int argc, char* argv[]) {
     expenses_table.setHorizontalHeaderLabels ({"ID", "Amount (EUR)", "Category", "Description"});
     layout.addWidget (&expenses_table);
 
+    expenses_table.setEditTriggers (QAbstractItemView::NoEditTriggers);
+
+    expenses_table.setSelectionBehavior(QAbstractItemView::SelectRows);
+    expenses_table.setSelectionMode(QAbstractItemView::SingleSelection);
+
+    QLabel total_label ("Total: 0.00 EUR");
+    layout.addWidget (&total_label);
+
     QObject::connect (&add_button, &QPushButton::clicked, &subtitle, [&subtitle, 
                                                                         &amount_input, 
                                                                         &category_input, 
                                                                         &description_input, 
                                                                         &expenses,
-                                                                        &expenses_table] () {
+                                                                        &expenses_table,
+                                                                        &total_label] () {
         if (category_input.text().trimmed().isEmpty() == true) {
             subtitle.setText ("Please enter a category.");
             return;
@@ -99,10 +108,11 @@ int main(int argc, char* argv[]) {
                     new QTableWidgetItem (QString::fromStdString(exp.description))
                 );
 
-                expenses_table.setEditTriggers (QAbstractItemView::NoEditTriggers);
-            
-                expenses_table.setSelectionBehavior(QAbstractItemView::SelectRows);
-                expenses_table.setSelectionMode(QAbstractItemView::SingleSelection);
+                total_label.setText (
+                    "Total: " +
+                    QString::fromStdString (formatAmount (calculateTotal (expenses))) +
+                    " EUR" 
+                );
             }
             else
                 subtitle.setText("Could not add expense.");
@@ -114,7 +124,8 @@ int main(int argc, char* argv[]) {
 
     QObject::connect (&remove_button, &QPushButton::clicked, &subtitle, [&subtitle, 
                                                                             &expenses_table,
-                                                                            &expenses] {
+                                                                            &expenses,
+                                                                            &total_label] () {
         int row = expenses_table.currentRow();
 
         if (row == -1) {
@@ -130,6 +141,12 @@ int main(int argc, char* argv[]) {
         if (removed == true) {
             expenses_table.removeRow (row);
             subtitle.setText ("Expense removed.");
+
+            total_label.setText (
+                "Total: " +
+                QString::fromStdString (formatAmount (calculateTotal (expenses))) +
+                " EUR" 
+            );
         }
         else
             subtitle.setText ("Could not remove expense.");
