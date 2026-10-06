@@ -52,7 +52,8 @@ int main(int argc, char* argv[]) {
                                                                         &amount_input, 
                                                                         &category_input, 
                                                                         &description_input, 
-                                                                        &expenses] () {
+                                                                        &expenses,
+                                                                        &expenses_table] () {
         if (category_input.text().trimmed().isEmpty() == true) {
             subtitle.setText ("Please enter a category.");
             return;
@@ -72,11 +73,66 @@ int main(int argc, char* argv[]) {
 
             bool valid = addExpense (expenses, exp);
 
-            if (valid == true)
+            if (valid == true) {
                 subtitle.setText("Expense added.");
+
+                int row = expenses_table.rowCount();
+                expenses_table.insertRow (row);
+
+                expenses_table.setItem (
+                    row, 0,
+                    new QTableWidgetItem (QString::number(exp.id))
+                );
+
+                expenses_table.setItem (
+                    row, 1,
+                    new QTableWidgetItem (QString::fromStdString(formatAmount (exp.amount_in_cents)))
+                );
+
+                expenses_table.setItem (
+                    row, 2,
+                    new QTableWidgetItem (QString::fromStdString(exp.category))
+                );
+
+                expenses_table.setItem (
+                    row, 3,
+                    new QTableWidgetItem (QString::fromStdString(exp.description))
+                );
+
+                expenses_table.setEditTriggers (QAbstractItemView::NoEditTriggers);
+            
+                expenses_table.setSelectionBehavior(QAbstractItemView::SelectRows);
+                expenses_table.setSelectionMode(QAbstractItemView::SingleSelection);
+            }
             else
                 subtitle.setText("Could not add expense.");
         }
+    });
+
+    QPushButton remove_button ("Remove selected expense");
+    layout.addWidget (&remove_button);
+
+    QObject::connect (&remove_button, &QPushButton::clicked, &subtitle, [&subtitle, 
+                                                                            &expenses_table,
+                                                                            &expenses] {
+        int row = expenses_table.currentRow();
+
+        if (row == -1) {
+            subtitle.setText ("Please select an expense.");
+            return;
+        }
+        else
+            subtitle.setText ("Expense selected.");
+
+        int id = expenses_table.item (row, 0)->text().toInt();
+        bool removed = removeExpense (expenses, id);
+
+        if (removed == true) {
+            expenses_table.removeRow (row);
+            subtitle.setText ("Expense removed.");
+        }
+        else
+            subtitle.setText ("Could not remove expense.");
     });
 
     window.show();
