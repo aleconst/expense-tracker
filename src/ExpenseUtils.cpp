@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <cstdint>
+#include <limits>
 
 std::string formatAmount (std::int64_t cents) {
     std::string format;
@@ -87,4 +88,17 @@ std::unordered_map <std::string, std::int64_t> calculateTotalsByCategory (const 
     }
 
     return totals;
+}
+
+int generateNextId (const std::vector<Expense>& expenses) {
+    int maxim = 0;
+
+    for (size_t index = 0; index < expenses.size(); index++)
+        if (maxim < expenses[index].id)
+            maxim = expenses[index].id;
+
+    if (maxim == std::numeric_limits<int>::max())
+        return 0;
+
+    return maxim + 1;
 }

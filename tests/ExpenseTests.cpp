@@ -202,6 +202,22 @@ int main() {
     assert (formatAmount (sum) == "30000000.00");
     assert(sum == 3000000000);
 
+    // Test ID generation: empty input, unordered IDs, and integer limit
+
+    std::vector<Expense> exp3;
+
+    assert (generateNextId (exp3) == 1);
+
+    exp3.push_back ({4, 1513, "fas", ""});
+    exp3.push_back ({1, 1513, "fas", ""});
+    exp3.push_back ({3, 1513, "fas", ""});
+
+    assert (generateNextId (exp3) == 5);
+
+    exp3.push_back ({std::numeric_limits<int>::max(), 1513, "fas", ""});
+
+    assert (generateNextId (exp3) == 0);
+
     // Report successful test completion
 
     std::cout << "All tests passed! \n";
