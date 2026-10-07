@@ -11,6 +11,8 @@
 #include <QLineEdit>
 #include <QSpinBox>
 #include <QTableWidget>
+#include <QHBoxLayout>
+#include <QHeaderView>
 
 void refreshExpensesTable (QTableWidget& table, const std::vector<Expense>& expenses) {
     table.setRowCount(0);
@@ -65,14 +67,23 @@ int main(int argc, char* argv[]) {
     QLabel subtitle ("Track your daily expenses");
     layout.addWidget (&subtitle);
 
+    QLabel amount_label("Amount (cents)");
+    layout.addWidget(&amount_label);
+
     QSpinBox amount_input;
     amount_input.setRange (1, 100000000);
     amount_input.setSuffix (" cents");
     layout.addWidget (&amount_input);
 
+    QLabel category_label("Category");
+    layout.addWidget(&category_label);
+
     QLineEdit category_input;
     category_input.setPlaceholderText ("Category");
     layout.addWidget (&category_input);
+
+    QLabel description_label("Description (optional)");
+    layout.addWidget(&description_label);
     
     QLineEdit description_input;
     description_input.setPlaceholderText ("Expense description");
@@ -81,19 +92,23 @@ int main(int argc, char* argv[]) {
     QPushButton add_button ("Add expense");
     layout.addWidget (&add_button);
 
+    QHBoxLayout filter_layout;
+
     QLineEdit filter_input;
     filter_input.setPlaceholderText ("Filter by category");
-    layout.addWidget (&filter_input);
+    filter_layout.addWidget (&filter_input);
 
     QPushButton clear_button ("Clear filter");
-    layout.addWidget (&clear_button);
+    filter_layout.addWidget (&clear_button);
 
     QPushButton filter_button ("Apply filter");
-    layout.addWidget (&filter_button);
+    filter_layout.addWidget (&filter_button);
+    layout.addLayout(&filter_layout);
 
     QTableWidget expenses_table;
     expenses_table.setColumnCount(4);
     expenses_table.setHorizontalHeaderLabels ({"ID", "Amount (EUR)", "Category", "Description"});
+    expenses_table.horizontalHeader () -> setSectionResizeMode (QHeaderView::Stretch);
     layout.addWidget (&expenses_table);
 
     expenses_table.setEditTriggers (QAbstractItemView::NoEditTriggers);
@@ -101,11 +116,19 @@ int main(int argc, char* argv[]) {
     expenses_table.setSelectionBehavior(QAbstractItemView::SelectRows);
     expenses_table.setSelectionMode(QAbstractItemView::SingleSelection);
 
+    QPushButton remove_button ("Remove selected expense");
+    layout.addWidget (&remove_button);
+
     QLabel total_label ("Total: 0.00 EUR");
     layout.addWidget (&total_label);
+
+    QLabel category_totals_label("Totals by category");
+    layout.addWidget(&category_totals_label);
+
     QTableWidget category_totals_table;
     category_totals_table.setColumnCount (2);
     category_totals_table.setHorizontalHeaderLabels ({"Category", "Total (EUR)"});
+    category_totals_table.horizontalHeader () -> setSectionResizeMode (QHeaderView::Stretch);
     layout.addWidget (&category_totals_table);
 
     category_totals_table.setEditTriggers (QAbstractItemView::NoEditTriggers);
@@ -164,10 +187,6 @@ int main(int argc, char* argv[]) {
         }
     });
 
-
-    QPushButton remove_button ("Remove selected expense");
-    layout.addWidget (&remove_button);
-
     QObject::connect (&remove_button, &QPushButton::clicked, &subtitle, [&subtitle, 
                                                                             &expenses_table,
                                                                             &expenses,
@@ -201,8 +220,9 @@ int main(int argc, char* argv[]) {
             subtitle.setText ("Could not remove expense.");
     });
 
+    QHBoxLayout storage_layout;
     QPushButton save_button ("Save expenses");
-    layout.addWidget (&save_button);
+    storage_layout.addWidget (&save_button);
 
     QObject::connect (&save_button, &QPushButton::clicked, &subtitle, [&expenses,
                                                                             &subtitle] () {
@@ -215,7 +235,8 @@ int main(int argc, char* argv[]) {
     });
 
     QPushButton load_button ("Load expenses");
-    layout.addWidget (&load_button);
+    storage_layout.addWidget (&load_button);
+    layout.addLayout(&storage_layout);
 
     QObject::connect (&load_button, &QPushButton::clicked, &subtitle, [&expenses,
                                                                             &expenses_table,
