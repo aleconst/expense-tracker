@@ -35,6 +35,19 @@ void refreshFilteredTable (QTableWidget& table, const std::vector<Expense>& expe
     }
 }
 
+void refreshCategoryTotalsTable (QTableWidget& table, const std::vector<Expense>& expenses) {
+    table.setRowCount (0);
+    auto totals = calculateTotalsByCategory (expenses);
+
+    for (const auto& entry : totals) {
+        auto row = table.rowCount ();
+        table.insertRow (row);
+
+        table.setItem (row, 0, new QTableWidgetItem (QString::fromStdString (entry.first)));
+        table.setItem (row, 1, new QTableWidgetItem (QString::fromStdString (formatAmount (entry.second))));
+    }
+}
+
 int main(int argc, char* argv[]) {
     QApplication app(argc, argv);
 
@@ -43,7 +56,7 @@ int main(int argc, char* argv[]) {
 
     QWidget window;
     window.setWindowTitle("Expense Tracker");
-    window.resize(800, 500);
+    window.resize(1000, 800);
 
     QVBoxLayout layout (&window);
     QLabel title ("Expense Tracker");
@@ -72,6 +85,9 @@ int main(int argc, char* argv[]) {
     filter_input.setPlaceholderText ("Filter by category");
     layout.addWidget (&filter_input);
 
+    QPushButton clear_button ("Clear filter");
+    layout.addWidget (&clear_button);
+
     QPushButton filter_button ("Apply filter");
     layout.addWidget (&filter_button);
 
@@ -87,6 +103,15 @@ int main(int argc, char* argv[]) {
 
     QLabel total_label ("Total: 0.00 EUR");
     layout.addWidget (&total_label);
+    QTableWidget category_totals_table;
+    category_totals_table.setColumnCount (2);
+    category_totals_table.setHorizontalHeaderLabels ({"Category", "Total (EUR)"});
+    layout.addWidget (&category_totals_table);
+
+    category_totals_table.setEditTriggers (QAbstractItemView::NoEditTriggers);
+
+    category_totals_table.setSelectionBehavior(QAbstractItemView::SelectRows);
+    category_totals_table.setSelectionMode(QAbstractItemView::SingleSelection);
 
     QObject::connect (&add_button, &QPushButton::clicked, &subtitle, [&subtitle, 
                                                                         &amount_input, 
@@ -95,7 +120,8 @@ int main(int argc, char* argv[]) {
                                                                         &expenses,
                                                                         &expenses_table,
                                                                         &total_label,
-                                                                        &active_filter] () {
+                                                                        &active_filter,
+                                                                        &category_totals_table] () {
         if (category_input.text().trimmed().isEmpty() == true) {
             subtitle.setText ("Please enter a category.");
             return;
@@ -126,6 +152,8 @@ int main(int argc, char* argv[]) {
                     " EUR" 
                 );
 
+                refreshCategoryTotalsTable (category_totals_table, expenses);
+
                 description_input.clear ();
                 amount_input.setValue (1);
                 amount_input.setFocus ();
@@ -136,13 +164,15 @@ int main(int argc, char* argv[]) {
         }
     });
 
+
     QPushButton remove_button ("Remove selected expense");
     layout.addWidget (&remove_button);
 
     QObject::connect (&remove_button, &QPushButton::clicked, &subtitle, [&subtitle, 
                                                                             &expenses_table,
                                                                             &expenses,
-                                                                            &total_label] () {
+                                                                            &total_label,
+                                                                            &category_totals_table] () {
         int row = expenses_table.currentRow();
 
         if (row == -1) {
@@ -164,6 +194,8 @@ int main(int argc, char* argv[]) {
                 QString::fromStdString (formatAmount (calculateTotal (expenses))) +
                 " EUR" 
             );
+
+            refreshCategoryTotalsTable (category_totals_table, expenses);
         }
         else
             subtitle.setText ("Could not remove expense.");
@@ -229,6 +261,19 @@ int main(int argc, char* argv[]) {
             else
                 subtitle.setText ("Filter applied.");
         }
+    });
+
+    QObject::connect (&clear_button, &QPushButton::clicked, &subtitle, [&filter_input,
+                                                                            &active_filter,
+                                                                            &subtitle,
+                                                                            &expenses,
+                                                                            &expenses_table] () {
+        filter_input.clear ();
+        active_filter.clear ();
+        
+        refreshFilteredTable (expenses_table, expenses, active_filter);
+
+        subtitle.setText ("Showing all expenses.");
     });
 
     window.show();
