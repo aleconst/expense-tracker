@@ -13,6 +13,7 @@
 #include <QTableWidget>
 #include <QHBoxLayout>
 #include <QHeaderView>
+#include <QMessageBox>
 
 void refreshExpensesTable (QTableWidget& table, const std::vector<Expense>& expenses) {
     table.setRowCount(0);
@@ -62,12 +63,17 @@ int main(int argc, char* argv[]) {
 
     QVBoxLayout layout (&window);
     QLabel title ("Expense Tracker");
+    title.setStyleSheet("font-size: 20px; font-weight: bold; margin-bottom: 8px;");
+    title.setAlignment(Qt::AlignCenter);
     layout.addWidget (&title);
 
     QLabel subtitle ("Track your daily expenses");
+    subtitle.setAlignment(Qt::AlignCenter);
+    subtitle.setStyleSheet("color: #b0b0b0; margin-bottom: 8px;");
     layout.addWidget (&subtitle);
 
     QLabel amount_label("Amount (cents)");
+    amount_label.setStyleSheet("font-weight: bold; margin-top: 6px;");
     layout.addWidget(&amount_label);
 
     QSpinBox amount_input;
@@ -76,6 +82,7 @@ int main(int argc, char* argv[]) {
     layout.addWidget (&amount_input);
 
     QLabel category_label("Category");
+    category_label.setStyleSheet("font-weight: bold; margin-top: 6px;");
     layout.addWidget(&category_label);
 
     QLineEdit category_input;
@@ -83,6 +90,7 @@ int main(int argc, char* argv[]) {
     layout.addWidget (&category_input);
 
     QLabel description_label("Description (optional)");
+    description_label.setStyleSheet("font-weight: bold; margin-top: 6px;");
     layout.addWidget(&description_label);
     
     QLineEdit description_input;
@@ -120,9 +128,11 @@ int main(int argc, char* argv[]) {
     layout.addWidget (&remove_button);
 
     QLabel total_label ("Total: 0.00 EUR");
+    total_label.setStyleSheet("font-size: 14px; font-weight: bold;");
     layout.addWidget (&total_label);
 
     QLabel category_totals_label("Totals by category");
+    category_totals_label.setStyleSheet("font-weight: bold; margin-top: 6px;");
     layout.addWidget(&category_totals_label);
 
     QTableWidget category_totals_table;
@@ -201,6 +211,17 @@ int main(int argc, char* argv[]) {
         else
             subtitle.setText ("Expense selected.");
 
+        auto answer = QMessageBox::question(
+            &subtitle,
+            "Remove expense",
+            "Are you sure you want to remove this expense?",
+            QMessageBox::Yes | QMessageBox::No,
+            QMessageBox::No
+        );
+
+        if (answer != QMessageBox::Yes)
+            return;
+
         int id = expenses_table.item (row, 0)->text().toInt();
         bool removed = removeExpense (expenses, id);
 
@@ -243,6 +264,17 @@ int main(int argc, char* argv[]) {
                                                                             &total_label,
                                                                             &subtitle,
                                                                             &active_filter] () {
+        auto answer = QMessageBox::question(
+            &subtitle,
+            "Load expenses",
+            "Loading will replace current expenses. Unsaved changes will be lost. Continue?",
+            QMessageBox::Yes | QMessageBox::No,
+            QMessageBox::No
+        );
+
+        if (answer != QMessageBox::Yes)
+            return;
+        
         bool loaded = loadExpenses  (expenses, "expenses.txt");
 
         if (loaded == false) {
