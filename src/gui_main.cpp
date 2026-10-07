@@ -2,6 +2,7 @@
 #include "Expense.h"
 #include "ExpenseStorage.h"
 
+#include <limits>
 #include <vector>
 #include <QApplication>
 #include <QWidget>
@@ -55,6 +56,7 @@ int main(int argc, char* argv[]) {
     QApplication app(argc, argv);
 
     std::vector <Expense> expenses;
+    int editing_id = 0;
     std::string active_filter;
 
     QWidget window;
@@ -77,7 +79,7 @@ int main(int argc, char* argv[]) {
     layout.addWidget(&amount_label);
 
     QSpinBox amount_input;
-    amount_input.setRange (1, 100000000);
+    amount_input.setRange(1, std::numeric_limits<int>::max());
     amount_input.setSuffix (" cents");
     layout.addWidget (&amount_input);
 
@@ -124,6 +126,52 @@ int main(int argc, char* argv[]) {
     expenses_table.setSelectionBehavior(QAbstractItemView::SelectRows);
     expenses_table.setSelectionMode(QAbstractItemView::SingleSelection);
 
+    QPushButton edit_button ("Edit selected expense");
+    layout.addWidget (&edit_button);
+
+    QPushButton cancel_edit_button("Cancel edit");
+    layout.addWidget(&cancel_edit_button);
+    cancel_edit_button.setEnabled(false);
+
+    QObject::connect(&edit_button, &QPushButton::clicked, &subtitle,
+                 [&subtitle, &expenses_table, &editing_id, &expenses, &amount_input, &category_input, &description_input, &add_button, &cancel_edit_button]() {
+        int row = expenses_table.currentRow();
+
+        if (row == -1) {
+            subtitle.setText("Please select an expense.");
+            return;
+        }
+
+        editing_id = expenses_table.item(row, 0)->text().toInt();
+        subtitle.setText("Selected expense is ready for editing.");
+
+        for (const auto& exp : expenses) {
+            if (exp.id == editing_id) {
+                amount_input.setValue(exp.amount_in_cents);
+                category_input.setText(QString::fromStdString(exp.category));
+                description_input.setText(QString::fromStdString(exp.description));
+                break;
+            }
+        }
+
+        add_button.setText("Save changes");
+        cancel_edit_button.setEnabled(true);
+    });
+
+    QObject::connect(&cancel_edit_button, &QPushButton::clicked, &subtitle,
+            [&editing_id, &add_button, &cancel_edit_button,
+            &amount_input, &category_input, &description_input, &subtitle]() {
+        editing_id = 0;
+        add_button.setText("Add expense");
+        cancel_edit_button.setEnabled(false);
+
+        amount_input.setValue(1);
+        category_input.clear();
+        description_input.clear();
+
+        subtitle.setText("Editing cancelled.");
+    });
+
     QPushButton remove_button ("Remove selected expense");
     layout.addWidget (&remove_button);
 
@@ -154,7 +202,10 @@ int main(int argc, char* argv[]) {
                                                                         &expenses_table,
                                                                         &total_label,
                                                                         &active_filter,
-                                                                        &category_totals_table] () {
+                                                                        &category_totals_table,
+                                                                        &editing_id,
+                                                                        &add_button,
+                                                                        &cancel_edit_button] () {
         if (category_input.text().trimmed().isEmpty() == true) {
             subtitle.setText ("Please enter a category.");
             return;
@@ -162,7 +213,11 @@ int main(int argc, char* argv[]) {
         else {
             Expense exp = {};
 
-            exp.id = generateNextId (expenses);
+            if (editing_id == 0)
+                exp.id = generateNextId(expenses);
+            else
+                exp.id = editing_id;
+
             exp.amount_in_cents = amount_input.value();
             exp.category = category_input.text().trimmed().toStdString();
             exp.description = description_input.text().toStdString();
@@ -172,10 +227,23 @@ int main(int argc, char* argv[]) {
                 return;
             }
 
-            bool valid = addExpense (expenses, exp);
+            bool valid;
+
+            if (editing_id == 0)
+                valid = addExpense(expenses, exp);
+            else
+                valid = updateExpense(expenses, exp);
 
             if (valid == true) {
-                subtitle.setText("Expense added.");
+                if (editing_id == 0) 
+                    subtitle.setText("Expense added.");
+
+                else
+                    subtitle.setText("Expense updated.");
+
+                editing_id = 0;
+                add_button.setText("Add expense");
+                cancel_edit_button.setEnabled(false);
 
                 refreshFilteredTable (expenses_table, expenses, active_filter);
 
@@ -193,15 +261,14 @@ int main(int argc, char* argv[]) {
                 amount_input.selectAll ();
             }
             else
-                subtitle.setText("Could not add expense.");
+                subtitle.setText("Could not save expense.");
         }
     });
 
-    QObject::connect (&remove_button, &QPushButton::clicked, &subtitle, [&subtitle, 
-                                                                            &expenses_table,
-                                                                            &expenses,
-                                                                            &total_label,
-                                                                            &category_totals_table] () {
+    QObject::connect (&remove_button, &QPushButton::clicked, &subtitle, 
+                [&subtitle, &expenses_table, &expenses, &total_label, 
+                    &category_totals_table, &editing_id, &add_button, &cancel_edit_button,
+                    &amount_input, &category_input, &description_input, &window] () {
         int row = expenses_table.currentRow();
 
         if (row == -1) {
@@ -211,21 +278,34 @@ int main(int argc, char* argv[]) {
         else
             subtitle.setText ("Expense selected.");
 
-        auto answer = QMessageBox::question(
-            &subtitle,
-            "Remove expense",
-            "Are you sure you want to remove this expense?",
-            QMessageBox::Yes | QMessageBox::No,
-            QMessageBox::No
+        QMessageBox confirmation(&window);
+        confirmation.setWindowTitle("Remove expense");
+        confirmation.setText("Are you sure you want to remove this expense?");
+        confirmation.setIcon(QMessageBox::Question);
+        confirmation.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+        confirmation.setDefaultButton(QMessageBox::No);
+
+        confirmation.setStyleSheet(
+            "QPushButton { min-width: 60px; min-height: 24px; font-size: 12px; }"
         );
 
-        if (answer != QMessageBox::Yes)
+        if (confirmation.exec() != QMessageBox::Yes)
             return;
 
         int id = expenses_table.item (row, 0)->text().toInt();
         bool removed = removeExpense (expenses, id);
 
         if (removed == true) {
+            if (editing_id == id) {
+                editing_id = 0;
+                add_button.setText("Add expense");
+                cancel_edit_button.setEnabled(false);
+
+                amount_input.setValue(1);
+                category_input.clear();
+                description_input.clear();
+            }
+            
             expenses_table.removeRow (row);
             subtitle.setText ("Expense removed.");
 
@@ -259,20 +339,25 @@ int main(int argc, char* argv[]) {
     storage_layout.addWidget (&load_button);
     layout.addLayout(&storage_layout);
 
-    QObject::connect (&load_button, &QPushButton::clicked, &subtitle, [&expenses,
-                                                                            &expenses_table,
-                                                                            &total_label,
-                                                                            &subtitle,
-                                                                            &active_filter] () {
-        auto answer = QMessageBox::question(
-            &subtitle,
-            "Load expenses",
-            "Loading will replace current expenses. Unsaved changes will be lost. Continue?",
-            QMessageBox::Yes | QMessageBox::No,
-            QMessageBox::No
+    QObject::connect (&load_button, &QPushButton::clicked, &subtitle, 
+                [&expenses, &expenses_table, &total_label, &subtitle, &active_filter, 
+                    &category_totals_table, &editing_id, &add_button, &cancel_edit_button,
+                    &amount_input, &category_input, &description_input, &window] () {
+        QMessageBox confirmation(&window);
+        confirmation.setWindowTitle("Load expenses");
+        confirmation.setText(
+            "Loading will replace current expenses.\n"
+            "Unsaved changes will be lost. Continue?"
+        );
+        confirmation.setIcon(QMessageBox::Question);
+        confirmation.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+        confirmation.setDefaultButton(QMessageBox::No);
+
+        confirmation.setStyleSheet(
+            "QPushButton { min-width: 60px; min-height: 24px; font-size: 12px; }"
         );
 
-        if (answer != QMessageBox::Yes)
+        if (confirmation.exec() != QMessageBox::Yes)
             return;
         
         bool loaded = loadExpenses  (expenses, "expenses.txt");
@@ -290,7 +375,16 @@ int main(int argc, char* argv[]) {
                 " EUR" 
             );
 
-            subtitle.setText ("Expenses loaded.");
+            editing_id = 0;
+            add_button.setText("Add expense");
+            cancel_edit_button.setEnabled(false);
+
+            amount_input.setValue(1);
+            category_input.clear();
+            description_input.clear();
+
+            refreshCategoryTotalsTable(category_totals_table, expenses);
+            subtitle.setText("Expenses loaded.");
         }
     });
 

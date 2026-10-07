@@ -15,3 +15,4 @@ bool addExpense (std::vector<Expense>& expenses, const Expense& exp);
 bool removeExpense (std::vector<Expense>& expenses, const int& id);
 std::unordered_map <std::string, std::int64_t> calculateTotalsByCategory (const std::vector <Expense>& expenses);
 int generateNextId (const std::vector<Expense>& expenses);
+bool updateExpense(std::vector<Expense>& expenses, const Expense& updated);

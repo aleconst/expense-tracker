@@ -218,6 +218,41 @@ int main() {
 
     assert (generateNextId (exp3) == 0);
 
+    // Test updateExpense: update fields while preserving ID and size
+
+    std::vector<Expense> updated_exp = {{10, 1500, "food", "Lunch"}};
+
+    bool updated = updateExpense (updated_exp, {10, 2200, "transport", "Taxi"});
+
+    assert (updated == true);
+    assert (updated_exp.size() == 1);
+    assert (updated_exp[0].id == 10);
+    assert (updated_exp[0].amount_in_cents == 2200);
+    assert (updated_exp[0].category == "transport");
+    assert (updated_exp[0].description == "Taxi");
+
+    // Test updateExpense: missing ID leaves expenses unchanged
+
+    bool updated2 = updateExpense (updated_exp, {99, 3000, "food", "Dinner"});
+
+    assert (updated2 == false);
+    assert (updated_exp.size() == 1);
+    assert (updated_exp[0].id == 10);
+    assert (updated_exp[0].amount_in_cents == 2200);
+    assert (updated_exp[0].category == "transport");
+    assert (updated_exp[0].description == "Taxi");
+
+    // Test updateExpense: reject zero amount without changing existing data
+
+    bool updated3 = updateExpense (updated_exp, {10, 0, "food", "Dinner"});
+
+    assert (updated3 == false);
+    assert (updated_exp.size() == 1);
+    assert (updated_exp[0].id == 10);
+    assert (updated_exp[0].amount_in_cents == 2200);
+    assert (updated_exp[0].category == "transport");
+    assert (updated_exp[0].description == "Taxi");
+
     // Report successful test completion
 
     std::cout << "All tests passed! \n";

@@ -102,3 +102,20 @@ int generateNextId (const std::vector<Expense>& expenses) {
 
     return maxim + 1;
 }
+
+bool updateExpense(std::vector<Expense>& expenses, const Expense& updated) {
+    if (updated.id <= 0 || updated.amount_in_cents <= 0 || updated.category.size() == 0)
+        return false;
+
+    for (size_t index = 0; index < expenses.size(); index++) {
+        if (expenses[index].id == updated.id) {
+            expenses[index].amount_in_cents = updated.amount_in_cents;
+            expenses[index].category = updated.category;
+            expenses[index].description = updated.description;
+
+            return true;
+        }
+    }
+
+    return false;
+}
