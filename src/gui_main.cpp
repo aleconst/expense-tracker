@@ -26,10 +26,20 @@ void refreshExpensesTable (QTableWidget& table, const std::vector<Expense>& expe
     }
 }
 
+void refreshFilteredTable (QTableWidget& table, const std::vector<Expense>& expenses, const std::string& filter) {
+    if (filter.size() == 0)
+        refreshExpensesTable (table, expenses);
+    else {
+        std::vector<Expense> filtered = filterByCategory (expenses, filter);
+        refreshExpensesTable (table, filtered);
+    }
+}
+
 int main(int argc, char* argv[]) {
     QApplication app(argc, argv);
 
     std::vector <Expense> expenses;
+    std::string active_filter;
 
     QWidget window;
     window.setWindowTitle("Expense Tracker");
@@ -58,6 +68,13 @@ int main(int argc, char* argv[]) {
     QPushButton add_button ("Add expense");
     layout.addWidget (&add_button);
 
+    QLineEdit filter_input;
+    filter_input.setPlaceholderText ("Filter by category");
+    layout.addWidget (&filter_input);
+
+    QPushButton filter_button ("Apply filter");
+    layout.addWidget (&filter_button);
+
     QTableWidget expenses_table;
     expenses_table.setColumnCount(4);
     expenses_table.setHorizontalHeaderLabels ({"ID", "Amount (EUR)", "Category", "Description"});
@@ -77,7 +94,8 @@ int main(int argc, char* argv[]) {
                                                                         &description_input, 
                                                                         &expenses,
                                                                         &expenses_table,
-                                                                        &total_label] () {
+                                                                        &total_label,
+                                                                        &active_filter] () {
         if (category_input.text().trimmed().isEmpty() == true) {
             subtitle.setText ("Please enter a category.");
             return;
@@ -100,28 +118,7 @@ int main(int argc, char* argv[]) {
             if (valid == true) {
                 subtitle.setText("Expense added.");
 
-                int row = expenses_table.rowCount();
-                expenses_table.insertRow (row);
-
-                expenses_table.setItem (
-                    row, 0,
-                    new QTableWidgetItem (QString::number(exp.id))
-                );
-
-                expenses_table.setItem (
-                    row, 1,
-                    new QTableWidgetItem (QString::fromStdString(formatAmount (exp.amount_in_cents)))
-                );
-
-                expenses_table.setItem (
-                    row, 2,
-                    new QTableWidgetItem (QString::fromStdString(exp.category))
-                );
-
-                expenses_table.setItem (
-                    row, 3,
-                    new QTableWidgetItem (QString::fromStdString(exp.description))
-                );
+                refreshFilteredTable (expenses_table, expenses, active_filter);
 
                 total_label.setText (
                     "Total: " +
@@ -191,7 +188,8 @@ int main(int argc, char* argv[]) {
     QObject::connect (&load_button, &QPushButton::clicked, &subtitle, [&expenses,
                                                                             &expenses_table,
                                                                             &total_label,
-                                                                            &subtitle] () {
+                                                                            &subtitle,
+                                                                            &active_filter] () {
         bool loaded = loadExpenses  (expenses, "expenses.txt");
 
         if (loaded == false) {
@@ -199,7 +197,7 @@ int main(int argc, char* argv[]) {
             return;
         }
         else {
-            refreshExpensesTable (expenses_table, expenses);
+            refreshFilteredTable (expenses_table, expenses, active_filter);
 
             total_label.setText (
                 "Total: " +
@@ -208,6 +206,28 @@ int main(int argc, char* argv[]) {
             );
 
             subtitle.setText ("Expenses loaded.");
+        }
+    });
+
+    QObject::connect (&filter_button, &QPushButton::clicked, &subtitle, [&filter_input, 
+                                                                            &expenses,
+                                                                            &expenses_table,
+                                                                            &subtitle,
+                                                                            &active_filter] () {
+        active_filter = filter_input.text().trimmed().toStdString();
+        
+        if (active_filter.size() == 0) {
+            refreshExpensesTable (expenses_table, expenses);
+            subtitle.setText ("Showing all expenses.");
+        }
+        else {
+            std::vector<Expense> filtered = filterByCategory (expenses, active_filter);
+            refreshExpensesTable (expenses_table, filtered);
+
+            if (filtered.empty() == true)
+                subtitle.setText ("No matching expenses.");
+            else
+                subtitle.setText ("Filter applied.");
         }
     });
 
