@@ -1,5 +1,6 @@
 #include "ExpenseUtils.h"
 #include "Expense.h"
+#include "ExpenseStorage.h"
 
 #include <vector>
 #include <QApplication>
@@ -10,6 +11,20 @@
 #include <QLineEdit>
 #include <QSpinBox>
 #include <QTableWidget>
+
+void refreshExpensesTable (QTableWidget& table, const std::vector<Expense>& expenses) {
+    table.setRowCount(0);
+
+    for (const auto& exp : expenses) {
+        int row = table.rowCount ();
+        table.insertRow (row);
+
+        table.setItem (row, 0, new QTableWidgetItem (QString::number (exp.id)));
+        table.setItem (row, 1, new QTableWidgetItem (QString::fromStdString (formatAmount(exp.amount_in_cents))));
+        table.setItem (row, 2, new QTableWidgetItem (QString::fromStdString (exp.category)));
+        table.setItem (row, 3, new QTableWidgetItem (QString::fromStdString (exp.description)));
+    }
+}
 
 int main(int argc, char* argv[]) {
     QApplication app(argc, argv);
@@ -113,6 +128,11 @@ int main(int argc, char* argv[]) {
                     QString::fromStdString (formatAmount (calculateTotal (expenses))) +
                     " EUR" 
                 );
+
+                description_input.clear ();
+                amount_input.setValue (1);
+                amount_input.setFocus ();
+                amount_input.selectAll ();
             }
             else
                 subtitle.setText("Could not add expense.");
@@ -150,6 +170,45 @@ int main(int argc, char* argv[]) {
         }
         else
             subtitle.setText ("Could not remove expense.");
+    });
+
+    QPushButton save_button ("Save expenses");
+    layout.addWidget (&save_button);
+
+    QObject::connect (&save_button, &QPushButton::clicked, &subtitle, [&expenses,
+                                                                            &subtitle] () {
+        bool saved = saveExpenses (expenses, "expenses.txt");
+
+        if (saved == true)
+            subtitle.setText ("Expenses saved.");
+        else
+            subtitle.setText ("Could not save expenses.");
+    });
+
+    QPushButton load_button ("Load expenses");
+    layout.addWidget (&load_button);
+
+    QObject::connect (&load_button, &QPushButton::clicked, &subtitle, [&expenses,
+                                                                            &expenses_table,
+                                                                            &total_label,
+                                                                            &subtitle] () {
+        bool loaded = loadExpenses  (expenses, "expenses.txt");
+
+        if (loaded == false) {
+            subtitle.setText ("Could not load expenses. Current data was preserved.");
+            return;
+        }
+        else {
+            refreshExpensesTable (expenses_table, expenses);
+
+            total_label.setText (
+                "Total: " +
+                QString::fromStdString (formatAmount (calculateTotal (expenses))) +
+                " EUR" 
+            );
+
+            subtitle.setText ("Expenses loaded.");
+        }
     });
 
     window.show();
